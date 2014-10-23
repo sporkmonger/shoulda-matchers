@@ -7,7 +7,7 @@ $test_app.load
 ENV['BUNDLE_GEMFILE'] ||= app.gemfile_path
 ENV['RAILS_ENV'] = 'test'
 
-require 'shoulda-matchers'
+require 'shoulda/matchers'
 require 'rspec/rails'
 
 PROJECT_ROOT = File.expand_path('../..', __FILE__)
@@ -43,6 +43,13 @@ RSpec.configure do |config|
   UnitTests::RailsVersions.configure_example_group(config)
 
   config.include UnitTests::Matchers
+end
+
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
 end
 
 $VERBOSE = true
