@@ -1,10 +1,13 @@
 require 'unit_spec_helper'
+require 'shoulda/matchers/protected_attributes'
 
-describe Shoulda::Matchers::ActiveModel::AllowMassAssignmentOfMatcher do
+describe Shoulda::Matchers::ProtectedAttributes do
+  include described_class
+
   context '#description' do
     context 'without a role' do
       it 'includes the attribute name' do
-        expect(described_class.new(:attr).description).
+        expect(allow_mass_assignment_of(:attr).description).
           to eq 'allow mass assignment of attr'
       end
     end
@@ -12,7 +15,7 @@ describe Shoulda::Matchers::ActiveModel::AllowMassAssignmentOfMatcher do
     if active_model_3_1?
       context 'with a role' do
         it 'includes the attribute name and the role' do
-          expect(described_class.new(:attr).as(:admin).description).
+          expect(allow_mass_assignment_of(:attr).as(:admin).description).
             to eq 'allow mass assignment of attr as admin'
         end
       end

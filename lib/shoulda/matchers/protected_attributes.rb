@@ -1,10 +1,11 @@
 module Shoulda
   module Matchers
-    module ActiveModel
-      # The `allow_mass_assignment_of` matcher tests usage of Rails 3's
-      # `attr_accessible` and `attr_protected` macros, asserting that an
-      # attribute in your model is contained in either the whitelist or
-      # blacklist and thus can or cannot be set via mass assignment.
+    module ProtectedAttributes
+      # The `allow_mass_assignment_of` matcher tests usage of `attr_accessible`
+      # and `attr_protected` macros which is now provided by the
+      # `protected_attributes` gem. It asserts that an attribute in your model
+      # is contained in either the whitelist or blacklist and thus can or cannot
+      # be set via mass assignment.
       #
       #     class Post
       #       include ActiveModel::Model
