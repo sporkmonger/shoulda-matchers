@@ -232,4 +232,30 @@ describe Shoulda::Matchers::ActiveModel::AllowValueMatcher do
       end
     end
   end
+
+  context "when setting the value on the attribute fails to hold" do
+    it 'raises a CouldNotSetAttribute error' do
+      define_model('Person', age: :integer) do
+        def age=(age)
+          if age > 21
+            super(21)
+          else
+            super
+          end
+        end
+      end
+
+      message = Shoulda::Matchers.word_wrap <<EOT.strip
+allow_value tried to set the Person's age to 30, but had trouble doing so: when
+reading the attribute back out, its value was 21. This makes it very difficult,
+if not impossible, to test against. If you can, we recommend writing a test
+against this attribute manually.
+EOT
+
+      person = Person.new
+      expect {
+        expect(person).to allow_value(30).for(:age)
+      }.to raise_error(Shoulda::Matchers::ActiveModel::CouldNotSetAttribute, message)
+    end
+  end
 end

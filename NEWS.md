@@ -21,6 +21,12 @@
   * `set_session['key'].to(nil)` will no longer pass when the key in question
     has not been set yet.
 
+* `allow_value` will now raise an error if setting the given value on the given
+  attribute fails to hold (i.e. the value that comes back out of the attribute
+  is different). In this case testing the attribute is very difficult, if not
+  impossible, and we encourage you to write the test for this attribute
+  manually, if you can.
+
 # HEAD
 
 ### Deprecations

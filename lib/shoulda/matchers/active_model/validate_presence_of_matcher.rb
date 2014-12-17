@@ -120,11 +120,7 @@ module Shoulda
           super(subject)
           @expected_message ||= :blank
 
-          if secure_password_being_validated?
-            disallows_and_double_checks_value_of!(blank_value, @expected_message)
-          else
-            disallows_value_of(blank_value, @expected_message)
-          end
+          disallows_value_of(blank_value, @expected_message)
         end
 
         def description
@@ -137,20 +133,6 @@ module Shoulda
           defined?(::ActiveModel::SecurePassword) &&
             @subject.class.ancestors.include?(::ActiveModel::SecurePassword::InstanceMethodsOnActivation) &&
             @attribute == :password
-        end
-
-        def disallows_and_double_checks_value_of!(value, message)
-          error_class = Shoulda::Matchers::ActiveModel::CouldNotSetPasswordError
-
-          disallows_value_of(value, message) do |matcher|
-            matcher._after_setting_value do
-              actual_value = @subject.__send__(@attribute)
-
-              if !actual_value.nil?
-                raise error_class.create(@subject.class)
-              end
-            end
-          end
         end
 
         def blank_value

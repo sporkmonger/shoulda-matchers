@@ -245,13 +245,29 @@ module Shoulda
 
         def value_matches?(value)
           self.value = value
-          set_value(value)
+          set_and_double_check_value!(value)
           !errors_match?
         end
 
-        def set_value(value)
+        def set_and_double_check_value!(value)
           instance.__send__("#{attribute_to_set}=", value)
+          ensure_value_was_set!(value)
           after_setting_value_callback.call
+        end
+
+        def ensure_value_was_set!(expected_value)
+          if instance.respond_to?(attribute_to_set)
+            actual_value = instance.__send__(attribute_to_set)
+
+            if expected_value != actual_value
+              raise CouldNotSetAttribute.create(
+                instance,
+                attribute_to_set,
+                expected_value,
+                actual_value
+              )
+            end
+          end
         end
 
         def errors_match?

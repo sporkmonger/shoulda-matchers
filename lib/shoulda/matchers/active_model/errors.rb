@@ -21,7 +21,19 @@ Hence, this test will fail and there is no way to make it pass.
         end
       end
 
-      # @private
+      class CouldNotSetAttribute < StandardError
+        def self.create(instance, attribute, expected_value, actual_value)
+          message = Shoulda::Matchers.word_wrap <<EOT.strip
+allow_value tried to set the #{instance.class}'s #{attribute} to
+#{expected_value.inspect}, but had trouble doing so: when reading the attribute
+back out, its value was #{actual_value.inspect}. This makes it very difficult,
+if not impossible, to test against. If you can, we recommend writing a test
+against this attribute manually.
+EOT
+          new(message)
+        end
+      end
+
       class CouldNotSetPasswordError < Shoulda::Matchers::Error
         def self.create(model)
           super(model: model)
