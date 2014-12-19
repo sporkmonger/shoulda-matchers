@@ -27,6 +27,11 @@
   impossible, and we encourage you to write the test for this attribute
   manually, if you can.
 
+* Fix `validate_uniqueness_of` so that if your validation is declared with
+  `case_sensitive: false` but you have not qualified the matcher with
+  `case_insensitive`, your test will fail (previously this test would have
+  passed).
+
 # HEAD
 
 ### Deprecations

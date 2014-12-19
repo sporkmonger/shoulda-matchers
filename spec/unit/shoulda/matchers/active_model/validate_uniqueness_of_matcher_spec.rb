@@ -338,26 +338,66 @@ describe Shoulda::Matchers::ActiveRecord::ValidateUniquenessOfMatcher do
     end
   end
 
-  context 'a model with a case-sensitive uniqueness validation on a string attribute and an existing record' do
-    it 'accepts a case-sensitive value for that attribute' do
-      expect(case_sensitive_validation_with_existing_value(:string)).
-        to matcher
+  context 'when case_insensitive is not specified' do
+    context 'with no scopes' do
+      it 'accepts a model with a case-sensitive (default) validation' do
+        record = record_validating_uniqueness_of(:attr)
+        expect(record).to validate_uniqueness_of(:attr)
+      end
+
+      it 'rejects a model with a case-insensitive uniqueness validation' do
+        record = record_validating_uniqueness_of(:attr, case_sensitive: false)
+        expect(record).not_to validate_uniqueness_of(:attr)
+      end
     end
 
-    it 'rejects a case-insensitive value for that attribute' do
-      expect(case_sensitive_validation_with_existing_value(:string)).
-        not_to matcher.case_insensitive
+    context 'with a scope' do
+      it 'rejects a model with a case-insensitive uniqueness validation' do
+        record = record_validating_uniqueness_of(:attr,
+          case_sensitive: false,
+          scopes: [:attr2]
+        )
+        expect(record).not_to validate_uniqueness_of(:attr).scoped_to(:attr2)
+      end
     end
   end
 
-  context 'a model with a case-sensitive uniqueness validation on an integer attribute with an existing value' do
-    it 'accepts a case-insensitive value for that attribute' do
-      expect(case_sensitive_validation_with_existing_value(:integer)).
-        to matcher.case_insensitive
+  context 'when case_insensitive is specified' do
+    context 'with no scopes' do
+      it 'accepts a model with a case-sensitive (default) uniqueness validation on a string attribute' do
+        record = record_validating_uniqueness_of(:attr)
+        expect(record).
+          not_to validate_uniqueness_of(:attr).
+          case_insensitive
+      end
+
+      it 'does not reject a model with a case-sensitive (default) uniqueness validation on a non-string attribute' do
+        record = record_validating_uniqueness_of(:attr, type: :integer)
+        expect(record).
+          to validate_uniqueness_of(:attr).
+          case_insensitive
+      end
     end
 
-    it 'accepts a case-sensitive value for that attribute' do
-      expect(case_sensitive_validation_with_existing_value(:integer)).to matcher
+    context 'with a scope' do
+      it 'rejects a model with a case-sensitive (default) uniqueness validation on a string attribute' do
+        record = record_validating_uniqueness_of(:attr, scopes: [:attr2])
+        expect(record).
+          not_to validate_uniqueness_of(:attr).
+          scoped_to(:attr2).
+          case_insensitive
+      end
+
+      it 'does not reject a model with a case-sensitive (default) uniqueness validation on a non-string attribute' do
+        record = record_validating_uniqueness_of(:attr,
+          type: :integer,
+          scopes: [:attr2]
+        )
+        expect(record).
+          to validate_uniqueness_of(:attr).
+          scoped_to(:attr2).
+          case_insensitive
+      end
     end
   end
 
@@ -543,19 +583,27 @@ describe Shoulda::Matchers::ActiveRecord::ValidateUniquenessOfMatcher do
     end
   end
 
-  def case_sensitive_validation_with_existing_value(attr_type)
-    model = define_model(:example, attr: attr_type) do
-      attr_accessible :attr
-      validates_uniqueness_of :attr, case_sensitive: true
-    end.new
-    if attr_type == :string
-      Example.create!(attr: 'value')
-    elsif attr_type == :integer
-      Example.create!(attr: 1)
-    else
-      raise 'Must be :string or :integer'
+  def record_validating_uniqueness_of(attribute, options = {})
+    case_sensitive = options.fetch(:case_sensitive, true)
+    type = options.fetch(:type, :string)
+    scopes = options.fetch(:scopes, [])
+    attributes = [attribute] + scopes
+    column_options = attributes.each_with_object({}) do |attr, hash|
+      hash[attr] = type
     end
-    model
+
+    validation_options = {}
+    unless case_sensitive
+      validation_options[:case_sensitive] = false
+    end
+    if scopes.any?
+      validation_options[:scope] = scopes
+    end
+
+    define_model(:example, column_options) do
+      attr_accessible(attribute)
+      validates_uniqueness_of(attribute, validation_options)
+    end.new
   end
 
   def matcher
