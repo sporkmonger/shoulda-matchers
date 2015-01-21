@@ -12,6 +12,10 @@ module Shoulda
             @disallow_value_matcher.matches?(subject)
           end
 
+          # def does_not_match?(subject)
+            # !matches?(subject)
+          # end
+
           def with_message(message)
             @disallow_value_matcher.with_message(message)
             self
